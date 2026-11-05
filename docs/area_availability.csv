@@ -1,0 +1,23 @@
+area,eic_code,price,load,generation
+IT,10YIT-GRTN-----B,NoMatchingDataError,ok rows=96 cols=1 step=0 days 00:15:00,ok rows=96 cols=13 step=0 days 00:15:00
+IT_SACO_AC,10Y1001A1001A885,ok rows=97 cols=1 step=0 days 00:15:00,NoMatchingDataError,NoMatchingDataError
+IT_CALA,10Y1001C--00096J,ok rows=97 cols=1 step=0 days 00:15:00,ok rows=96 cols=1 step=0 days 00:15:00,ok rows=96 cols=6 step=0 days 00:15:00
+IT_SACO_DC,10Y1001A1001A893,ok rows=97 cols=1 step=0 days 00:15:00,NoMatchingDataError,NoMatchingDataError
+IT_BRNN,10Y1001A1001A699,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_CNOR,10Y1001A1001A70O,ok rows=97 cols=1 step=0 days 00:15:00,ok rows=96 cols=1 step=0 days 00:15:00,ok rows=96 cols=10 step=0 days 00:15:00
+IT_CSUD,10Y1001A1001A71M,ok rows=97 cols=1 step=0 days 00:15:00,ok rows=96 cols=1 step=0 days 00:15:00,ok rows=96 cols=13 step=0 days 00:15:00
+IT_FOGN,10Y1001A1001A72K,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_GR,10Y1001A1001A66F,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_MACRO_NORTH,10Y1001A1001A84D,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_MACRO_SOUTH,10Y1001A1001A85B,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_MALTA,10Y1001A1001A877,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_NORD,10Y1001A1001A73I,ok rows=97 cols=1 step=0 days 00:15:00,ok rows=96 cols=1 step=0 days 00:15:00,ok rows=96 cols=14 step=0 days 00:15:00
+IT_NORD_AT,10Y1001A1001A80L,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_NORD_CH,10Y1001A1001A68B,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_NORD_FR,10Y1001A1001A81J,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_NORD_SI,10Y1001A1001A67D,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_PRGP,10Y1001A1001A76C,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_ROSN,10Y1001A1001A77A,NoMatchingDataError,NoMatchingDataError,NoMatchingDataError
+IT_SARD,10Y1001A1001A74G,ok rows=97 cols=1 step=0 days 00:15:00,ok rows=96 cols=1 step=0 days 00:15:00,ok rows=96 cols=12 step=0 days 00:15:00
+IT_SICI,10Y1001A1001A75E,ok rows=97 cols=1 step=0 days 00:15:00,ok rows=96 cols=1 step=0 days 00:15:00,ok rows=96 cols=12 step=0 days 00:15:00
+IT_SUD,10Y1001A1001A788,ok rows=97 cols=1 step=0 days 00:15:00,ok rows=96 cols=1 step=0 days 00:15:00,ok rows=96 cols=10 step=0 days 00:15:00
