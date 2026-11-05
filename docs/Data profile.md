@@ -71,10 +71,17 @@ divided by four.
 The 60-minute to 15-minute transition did **not** happen on one date for all
 three datasets.
 
-| Dataset | Switched | Evidence |
-|---|---|---|
-| Load, generation | **2024-12-31 at 01:00 local (00:00 UTC)** | 2024-12-30 hourly; 2024-12-31 returns 93 rows |
-| Day-ahead prices | **2025-10-01** (SDAC delivery day) | 2025-09-25 hourly; 2025-10-05 15-minute |
+| Dataset | Switched | Alignment | Boundary day |
+|---|---|---|---|
+| Load, generation | 2024-12-31 01:00 local | UTC midnight | mixed — 93 rows, one hourly interval then 92 quarter-hourly |
+| Day-ahead prices | 2025-10-01 00:00 local | local midnight | clean — 2025-09-30 fully hourly (25 rows), 2025-10-01 fully 15-minute (97 rows) |
+
+The two switches align to different time bases — one to UTC, one to local
+time — so a single switch-date constant cannot decide resolution for both.
+Resolution is read from row spacing instead.
+
+Prices on 2025-10-01 vary between quarters within each hour, so these are
+genuine 15-minute clearing prices rather than an hourly value repeated.
 
 ### The load/generation switch happens mid-day
 
