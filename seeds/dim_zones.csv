@@ -1,0 +1,8 @@
+zone_code,eic_code,zone_name,zone_type,valid_from,valid_to
+IT_NORD,10Y1001A1001A73I,Northern Italy,geographical,2021-01-01
+IT_CNOR,10Y1001A1001A70O,Central-Northern Italy,geographical,2021-01-01
+IT_CSUD,10Y1001A1001A71M,Central-Southern Italy,geographical,2021-01-01
+IT_SUD,10Y1001A1001A788,Southern Italy,geographical,2021-01-01
+IT_CALA,10Y1001C--00096J,Calabria,geographical,2021-01-01
+IT_SICI,10Y1001A1001A75E,Sicily,geographical,2021-01-01
+IT_SARD,10Y1001A1001A74G,Sardinia,geographical,2021-01-01

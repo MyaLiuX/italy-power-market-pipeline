@@ -49,62 +49,26 @@ accessed through the [`entsoe-py`](https://github.com/EnergieID/entsoe-py) clien
 | Actual total load | 6.1.A | Demand side |
 | Actual generation per production type | 16.1.B&C | Supply side, broken down by fuel |
 
-<!-- TODO: verify the data item codes above against the API guide before publishing. -->
-<!-- TODO: record the geographic granularity actually available for each dataset
-     (per bidding zone vs national only) once the availability probe has run.
-     This determines whether the three datasets share a join grain. -->
 
 ## Data engineering challenges
 
-The value of this dataset is that it is not clean. The following are real
-properties of the source that the pipeline has to handle.
+The source is not clean. These are measured properties, documented in full
+in [docs/data_profile.md](docs/data_profile.md).
 
-### Time resolution changes mid-history
-
-The European day-ahead market moved from a 60-minute to a 15-minute market time
-unit, going live on the trading day of 30 September 2025 for delivery day
-1 October 2025. Historical data therefore contains two different resolutions in
-the same series, and any weighted aggregation across that boundary has to account
-for the change in interval length.
-
-Demand and generation resolutions are published independently of the price
-resolution and are not assumed to switch on the same date.
-
-### Time zones and daylight saving
-
-The API returns timestamps localised to the zone's own time zone
-(`Europe/Rome`), where the UTC offset shifts between `+01:00` and `+02:00`.
-Local time is not a usable key: the October transition produces a repeated local
-hour and the March transition produces a missing one.
-
-The pipeline stores all timestamps in UTC and converts to local time only at the
-presentation layer.
-
-### Inclusive query boundaries
-
-The client returns an inclusive `[start, end]` range, so a per-day ingestion loop
-receives the first interval of the following day as an extra row. Without
-trimming, adjacent days overlap at the boundary and produce duplicate keys
-downstream. Ingestion normalises every window to a half-open `[start, end)`
-interval.
-
-### A structural break in the price distribution
-
-The Italian day-ahead market operated with a price floor of 0 EUR/MWh for most of
-its history, so the distribution is hard-truncated at zero rather than tapering.
-That floor was lifted recently — the first sub-zero day-ahead clearing was on
-14 October 2026 — so the distribution changes shape partway through the history.
-Any statistical treatment of prices has to be aware of which regime a given
-period belongs to.
-
-### Bidding zones are not constant over time
-
-The zone configuration changes. Calabria (`IT_CALA`) was separated out of the
-southern zone in 2021, so queries for it return nothing before that date, and
-several virtual zones were retired in the same reconfiguration. The zone
-dimension is modelled with validity periods rather than as a static list.
-
-<!-- TODO: add the exact CALA start date once confirmed from the data. -->
+- **Two separate resolution switches.** Load and generation moved to 15
+  minutes on 2024-12-31; day-ahead prices on 2025-10-01. The load switch
+  happens mid-day, so a single response carries both resolutions.
+- **Query boundaries differ per dataset.** Prices return an inclusive
+  range, load and generation a half-open one. One trimming rule for all
+  three silently drops an interval a day.
+- **Calendar-aware date arithmetic.** `Timedelta(days=1)` is wrong on the
+  two DST days a year — short by an hour in October, overlapping the next
+  day in March.
+- **Generation schema varies by zone and over time.** Column counts range
+  from 6 to 14 and have grown since 2016, so generation is stored long
+  rather than wide.
+- **Transient 599 errors.** The same request can fail and then succeed, so
+  ingestion retries with backoff.
 
 ## Architecture
 
