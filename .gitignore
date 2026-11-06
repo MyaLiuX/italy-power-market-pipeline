@@ -1,5 +1,41 @@
+# --- Python ---
 .venv/
-.env
-data/
 __pycache__/
 .ipynb_checkpoints/
+
+# --- Secrets ---
+.env
+# GCP service account keys. This project uses Application Default
+# Credentials, so no key file should ever exist here — this is a guard
+# against accidentally committing one.
+credentials/
+*-sa-key.json
+*.pem
+
+# --- Data ---
+# Raw landing zone: regenerable from ENTSO-E, never committed.
+data/
+
+# --- Terraform ---
+# Local state and backups: may contain resource attributes in plaintext.
+*.tfstate
+*.tfstate.*
+# Provider plugins and module cache: large, machine-specific.
+.terraform/
+# Variable values: holds the GCP project ID and bucket name.
+# Commit terraform.tfvars.example instead.
+*.tfvars
+crash.log
+crash.*.log
+override.tf
+override.tf.json
+
+# --- Airflow runtime ---
+logs/
+airflow.db
+airflow.cfg
+airflow-webserver.pid
+standalone_admin_password.txt
+
+# --- OS ---
+.DS_Store
