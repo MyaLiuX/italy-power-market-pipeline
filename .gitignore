@@ -36,6 +36,7 @@ airflow.db
 airflow.cfg
 airflow-webserver.pid
 standalone_admin_password.txt
+.astro/config.yaml.lock
 
 # --- OS ---
 .DS_Store
