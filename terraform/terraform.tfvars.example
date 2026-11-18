@@ -1,0 +1,5 @@
+# Copy this file to terraform.tfvars and fill in your own values.
+# terraform.tfvars is gitignored — it holds environment-specific values.
+
+project_id  = "your-gcp-project-id"
+bucket_name = "your-gcp-project-id-raw-energy-data"
