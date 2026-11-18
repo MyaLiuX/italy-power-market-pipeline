@@ -1,0 +1,10 @@
+
+# Local development only. Production (Cloud Composer) uses Workload Identity,
+# not a mounted personal ADC file.
+services:
+  scheduler:
+    volumes:
+      - /Users/mya/.config/gcloud/application_default_credentials.json:/home/astro/.config/gcloud/application_default_credentials.json:ro
+    environment:
+      GOOGLE_APPLICATION_CREDENTIALS: /home/astro/.config/gcloud/application_default_credentials.json
+      GOOGLE_CLOUD_PROJECT: project-b3a5c544-d466-453b-818
