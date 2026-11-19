@@ -76,7 +76,7 @@ DATASETS = (
 class ZoneResult:
     dataset: str
     zone: str
-    status: str  # "ok", "no_data" or "failed"
+    status: str  # "ok", "partial", "no_data" or "failed
     rows: int = 0
     detail: str = ""
 
@@ -84,7 +84,7 @@ class ZoneResult:
 @dataclass(frozen=True)
 class ExtractResult:
     zones: list[ZoneResult]
-    files: list[Path]
+    files: dict[str, Path]  # dataset name -> local parquet written
 
     @property
     def all_ok(self) -> bool:
@@ -111,7 +111,7 @@ def extract_day(
     logger.info("%s: window %s -> %s, %d zones", delivery_date, start, end, len(zones))
 
     zone_results: list[ZoneResult] = []
-    files: list[Path] = []
+    files: dict[str, Path] = {}
 
     for spec in DATASETS:
         frames = []
@@ -129,7 +129,7 @@ def extract_day(
         _validate(table, spec, start, end)
         path = _output_path(out_dir, spec.name, delivery_date)
         _write_parquet(table, path)
-        files.append(path)
+        files[spec.name] = path
         logger.info("%s: wrote %d rows to %s", spec.name, len(table), path)
 
     return ExtractResult(zones=zone_results, files=files)
@@ -155,12 +155,24 @@ def _fetch_zone(
     except EntsoeRequestError as exc:
         logger.error("%s", exc)
         return ZoneResult(spec.name, zone, "failed", detail=str(exc)), None
-
+    
     raw = clip_to_window(raw, start, end).tz_convert("UTC")
     frame = spec.to_frame(raw)
     frame.insert(1, "zone", zone)  # column order: ts_utc, zone, values...
+
+    if not _reaches_end(raw.index, end):
+        # A day fetched before it is over comes back truncated, not empty.
+        # The frame is still returned so the partial data is written locally
+        # for inspection; the "partial" status is what stops the day from
+        # being published.
+        last = raw.index[-1] if len(raw.index) else None
+        logger.warning("%s: %d rows, stops at %s, short of %s",
+                       label, len(frame), last, end)
+        return ZoneResult(spec.name, zone, "partial", rows=len(frame)), frame
+
     logger.info("%s: %d rows", label, len(frame))
     return ZoneResult(spec.name, zone, "ok", rows=len(frame)), frame
+    
 
 
 def _validate(
@@ -174,6 +186,15 @@ def _validate(
         raise ValueError(f"{spec.name}: timestamps outside [{start}, {end})")
     if table.duplicated(subset=list(spec.key)).any():
         raise ValueError(f"{spec.name}: duplicate rows on key {spec.key}")
+
+
+def _reaches_end(index: pd.DatetimeIndex, end: pd.Timestamp) -> bool:
+    """True if the series runs all the way to the end of the day's window.
+    """
+    if len(index) < 2:
+        return False
+    step = index[-1] - index[-2]
+    return index[-1] + step >= end
 
 
 def _output_path(out_dir: Path, dataset: str, delivery_date: date) -> Path:
