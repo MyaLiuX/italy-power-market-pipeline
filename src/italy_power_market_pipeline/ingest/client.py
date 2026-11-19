@@ -2,6 +2,7 @@
 """
 
 import logging
+import re
 import time
 from collections.abc import Callable
 from typing import TypeVar
@@ -70,10 +71,23 @@ def _is_transient(exc: requests.RequestException) -> bool:
         response.status_code == 429 or response.status_code >= 500
     )
 
+_REASON = re.compile(r"<text>(.*?)</text>", re.DOTALL)
+
+
+def _reason(response: requests.Response) -> str:
+    """Return ENTSO-E's own explanation of a rejected request, on one line."""
+    match = _REASON.search(response.text)
+    return " ".join(match.group(1).split())[:200] if match else ""
+
 
 def _describe(exc: requests.RequestException) -> str:
-    """Name a failure by type and status code only, never by its message."""
+    """Name a failure by type and status code, plus the server's own reason.
+
+    The reason text is safe to log: the API key travels in the request URL,
+    never in the reply.
+    """
     response = exc.response
-    if response is not None:
-        return f"{type(exc).__name__} (HTTP {response.status_code})"
-    return type(exc).__name__
+    if response is None:
+        return type(exc).__name__
+    reason = _reason(response)
+    return f"{type(exc).__name__} (HTTP {response.status_code}) {reason}".strip()
