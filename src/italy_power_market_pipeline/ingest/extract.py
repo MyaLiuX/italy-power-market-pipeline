@@ -78,6 +78,7 @@ class ZoneResult:
     zone: str
     status: str  # "ok", "partial", "no_data" or "failed
     rows: int = 0
+    intervals: int = 0  # distinct timestamps; for generation this is not rows
     detail: str = ""
 
 
@@ -160,18 +161,15 @@ def _fetch_zone(
     frame = spec.to_frame(raw)
     frame.insert(1, "zone", zone)  # column order: ts_utc, zone, values...
 
-    if not _reaches_end(raw.index, end):
-        # A day fetched before it is over comes back truncated, not empty.
-        # The frame is still returned so the partial data is written locally
-        # for inspection; the "partial" status is what stops the day from
-        # being published.
-        last = raw.index[-1] if len(raw.index) else None
-        logger.warning("%s: %d rows, stops at %s, short of %s",
-                       label, len(frame), last, end)
-        return ZoneResult(spec.name, zone, "partial", rows=len(frame)), frame
+    gap = _coverage_gap(raw.index, start, end)
+    if gap:
+        logger.warning("%s: %s", label, gap)
+        return ZoneResult(spec.name, zone, "partial", rows=len(frame),
+                          intervals=len(raw.index), detail=gap), frame
 
     logger.info("%s: %d rows", label, len(frame))
-    return ZoneResult(spec.name, zone, "ok", rows=len(frame)), frame
+    return ZoneResult(spec.name, zone, "ok", rows=len(frame),
+                      intervals=len(raw.index)), frame
     
 
 
@@ -188,13 +186,24 @@ def _validate(
         raise ValueError(f"{spec.name}: duplicate rows on key {spec.key}")
 
 
-def _reaches_end(index: pd.DatetimeIndex, end: pd.Timestamp) -> bool:
-    """True if the series runs all the way to the end of the day's window.
+def _coverage_gap(
+    index: pd.DatetimeIndex, start: pd.Timestamp, end: pd.Timestamp
+) -> str:
+    """Return "" if the series covers the window seamlessly, else what is wrong.
     """
     if len(index) < 2:
-        return False
-    step = index[-1] - index[-2]
-    return index[-1] + step >= end
+        return f"only {len(index)} timestamp(s)"
+
+    steps = index.to_series().diff().dropna().unique()
+    step = pd.Timedelta(steps.min())
+
+    if index[0] != start:
+        return f"starts at {index[0]}, not at {start}"
+    if index[-1] + step != end:
+        return f"ends at {index[-1]}, short of {end}"
+    if len(steps) > 1:
+        return f"largest interval {pd.Timedelta(steps.max())}, shortest {step}"
+    return ""
 
 
 def _output_path(out_dir: Path, dataset: str, delivery_date: date) -> Path:
